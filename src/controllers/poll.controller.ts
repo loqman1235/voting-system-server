@@ -17,7 +17,7 @@ const getPolls = async (req: Request, res: Response) => {
       );
       const votesWithPercentages = poll.votes.map((voteCount, index) => {
         const percentage =
-          totalVotes > 0 ? ((voteCount / totalVotes) * 100).toFixed(2) : 0;
+          totalVotes > 0 ? ((voteCount / totalVotes) * 100).toFixed(0) : 0;
         return {
           option: poll.options[index],
           votes: voteCount,
@@ -49,7 +49,7 @@ const getPoll = async (req: Request, res: Response) => {
     );
     const votesWithPercentages = poll.votes.map((voteCount, index) => {
       const percentage =
-        totalVotes > 0 ? ((voteCount / totalVotes) * 100).toFixed(2) : 0;
+        totalVotes > 0 ? ((voteCount / totalVotes) * 100).toFixed(0) : 0;
       return {
         option: poll.options[index],
         votes: voteCount,
@@ -89,4 +89,43 @@ const createPoll = async (req: Request, res: Response) => {
   }
 };
 
-export { getPolls, createPoll, getPoll };
+// Vote
+const vote = async (req: Request, res: Response) => {
+  try {
+    const { pollId, option } = req.body;
+
+    if (!pollId || !option) {
+      return res
+        .status(400)
+        .json({ message: "Poll id and option are required" });
+    }
+
+    const poll = await Poll.findById(pollId);
+
+    if (!poll) {
+      return res.status(404).json({ message: "Poll not found" });
+    }
+
+    if (poll.votes[option] >= poll.options.length) {
+      return res
+        .status(400)
+        .json({ message: "You have already voted for this option" });
+    }
+
+    // Check if option is valid
+    if (option >= poll.options.length) {
+      return res.status(400).json({ message: "Option does not exist" });
+    }
+
+    poll.votes[option] += 1;
+
+    await poll.save();
+
+    res.status(200).json({ message: "Vote added successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export { getPolls, createPoll, getPoll, vote };
