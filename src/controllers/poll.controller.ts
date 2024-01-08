@@ -15,6 +15,7 @@ const getPolls = async (req: Request, res: Response) => {
         (acc, voteCount) => acc + voteCount,
         0
       );
+
       const votesWithPercentages = poll.votes.map((voteCount, index) => {
         const percentage =
           totalVotes > 0 ? ((voteCount / totalVotes) * 100).toFixed(0) : 0;
@@ -24,6 +25,7 @@ const getPolls = async (req: Request, res: Response) => {
           percentage: percentage,
         };
       });
+
       return { ...poll, votes: votesWithPercentages };
     });
 
@@ -89,6 +91,21 @@ const createPoll = async (req: Request, res: Response) => {
   }
 };
 
+// Delete poll
+const deletePoll = async (req: Request, res: Response) => {
+  try {
+    const { pollId } = req.params;
+    const poll = await Poll.findByIdAndDelete(pollId);
+    if (!poll) {
+      return res.status(404).json({ message: "Poll not found" });
+    }
+    res.status(200).json({ message: "Poll deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
 // Vote
 const vote = async (req: Request, res: Response) => {
   try {
@@ -128,4 +145,4 @@ const vote = async (req: Request, res: Response) => {
   }
 };
 
-export { getPolls, createPoll, getPoll, vote };
+export { getPolls, createPoll, getPoll, deletePoll, vote };
