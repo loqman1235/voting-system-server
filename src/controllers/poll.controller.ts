@@ -47,6 +47,8 @@ const createPoll = async (req: Request, res: Response) => {
       question,
       options,
       votes: new Array(options.length).fill(0),
+      // poll ends after 2 minutes
+      endsAt: new Date(Date.now() + 2 * 60 * 1000),
     });
 
     await poll.save();
@@ -90,9 +92,14 @@ const vote = async (req: Request, res: Response) => {
     }
 
     // Check if option is valid
-    // if (option >= poll.options.length) {
-    //   return res.status(400).json({ message: "Option does not exist" });
-    // }
+    if (option >= poll.options.length) {
+      return res.status(400).json({ message: "Option does not exist" });
+    }
+
+    // if poll has ended
+    if (poll.endsAt && poll.endsAt < new Date()) {
+      return res.status(400).json({ message: "Poll has ended" });
+    }
 
     poll.votes[option] += 1;
 
