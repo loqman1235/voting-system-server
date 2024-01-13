@@ -47,8 +47,8 @@ const createPoll = async (req: Request, res: Response) => {
       question,
       options,
       votes: new Array(options.length).fill(0),
-      // poll ends after 10 minutes
-      endsAt: new Date(Date.now() + 10 * 60 * 1000),
+      // poll ends after 2 minutes
+      endsAt: new Date(Date.now() + 2 * 60 * 1000),
     });
 
     await poll.save();
